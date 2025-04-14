@@ -85,7 +85,36 @@ class TestHTMLNode(unittest.TestCase):
             parent_node.to_html(),
             "<div><span><b>grandchild</b></span></div>",
         )
+    def test_to_html_with_empty_children_list(self):
+        with self.assertRaises(ValueError):
+            ParentNode("div", []).to_html()
 
+    def test_to_html_with_multiple_children(self):
+        child1 = LeafNode("span", "first")
+        child2 = LeafNode("b", "second")
+        parent = ParentNode("div", [child1, child2])
+        self.assertEqual(parent.to_html(), "<div><span>first</span><b>second</b></div>")
+    
+    def test_to_html_with_props(self):
+        child = LeafNode("span", "child")
+        parent = ParentNode("div", [child], {"class": "container", "id": "main"})
+        self.assertEqual(parent.to_html(), '<div class="container" id="main"><span>child</span></div>')
+
+    def test_to_html_with_missing_tag(self):
+        child = LeafNode("span", "child")
+        parent = ParentNode(None, [child])
+        with self.assertRaises(ValueError):
+            parent.to_html()
+
+    def test_to_html_with_none_children(self):
+        with self.assertRaises(ValueError):
+            ParentNode("div", None).to_html()
+    
+    def test_deep_nesting(self):
+        leaf = LeafNode("b", "text")
+        parent1 = ParentNode("p", [leaf])
+        parent2 = ParentNode("div", [parent1])
+        parent3 = ParentNode("section", [parent2])
 
 if __name__ == "__main__":
     unittest.main()
