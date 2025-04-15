@@ -11,7 +11,7 @@ class TestTextNode(unittest.TestCase):
 
     def test_uneq(self):
         node = TextNode("This is a text node", TextType.ITALIC)
-        node2 = TextNode("This is a text node", TextType.NORMAL)
+        node2 = TextNode("This is a text node", TextType.TEXT)
         self.assertNotEqual(node, node2)
 
     def test_no_url(self):
