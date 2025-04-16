@@ -58,5 +58,47 @@ class TestConverter(unittest.TestCase):
         assert len(new_nodes) == 1
         assert new_nodes[0].text
 
+    def test_extract_markdown_images(self):
+        matches = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+
+    def test_multiple_images_and_links(self):
+        text = "Here's ![an image](http://example.com/img.jpg) and [a link](http://example.com) followed by ![another image](http://example.com/img2.png)"
+        image_matches = extract_markdown_images(text)
+        link_matches = extract_markdown_links(text)
+        self.assertListEqual([("an image", "http://example.com/img.jpg"), ("another image", "http://example.com/img2.png")], image_matches)
+        self.assertListEqual([("a link", "http://example.com")], link_matches)
+
+    def test_empty_text(self):
+        image_matches = extract_markdown_images("This is an empty alt text image: ![](https://example.com/img.jpg)")
+        link_matches = extract_markdown_links("This is an empty anchor text link: [](https://example.com)")
+        self.assertListEqual([("", "https://example.com/img.jpg")], image_matches)
+        self.assertListEqual([("", "https://example.com")], link_matches)
+    
+    def test_complex_urls(self):
+        image_matches = extract_markdown_images("![image](https://example.com/path?query=value&another=123)")
+        link_matches = extract_markdown_links("[link](https://example.com/path?query=value&another=123)")
+        self.assertListEqual([("image", "https://example.com/path?query=value&another=123")], image_matches)
+        self.assertListEqual([("link", "https://example.com/path?query=value&another=123")], link_matches)
+
+    def test_no_matches(self):  
+        # Text without any markdown images
+        image_matches = extract_markdown_images("This is plain text with no images or links.")
+        self.assertListEqual([], image_matches)
+        
+        # Text without any markdown links
+        link_matches = extract_markdown_links("This is plain text with no images or links.")
+        self.assertListEqual([], link_matches)
+        
+        # Text with a malformed image tag
+        image_matches = extract_markdown_images("This has a broken image tag: !image.jpg")
+        self.assertListEqual([], image_matches)
+        
+        # Text with a malformed link tag
+        link_matches = extract_markdown_links("This has a broken link tag: [link](broken")
+        self.assertListEqual([], link_matches)
+
 if __name__ == "__main__":
     unittest.main()
