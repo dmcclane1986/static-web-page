@@ -100,5 +100,99 @@ class TestConverter(unittest.TestCase):
         link_matches = extract_markdown_links("This has a broken link tag: [link](broken")
         self.assertListEqual([], link_matches)
 
+
+    def test_split_nodes_image(self):
+        # Test case provided in the assignment
+        node = TextNode(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual(
+            [
+                TextNode("This is text with an ", TextType.TEXT),
+                TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+                TextNode(" and another ", TextType.TEXT),
+                TextNode(
+                    "second image", TextType.IMAGE, "https://i.imgur.com/3elNhQu.png"
+                ),
+            ],
+            new_nodes,
+        )
+        
+    def test_split_nodes_image_no_images(self):
+        # Test case with no images
+        node = TextNode("This is text with no images", TextType.TEXT)
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual([node], new_nodes)
+        
+    def test_split_nodes_image_multiple_nodes(self):
+        # Test with multiple input nodes
+        node1 = TextNode("Text with ![img1](url1)", TextType.TEXT)
+        node2 = TextNode("Another text", TextType.TEXT)
+        node3 = TextNode("Text with ![img2](url2) and ![img3](url3)", TextType.TEXT)
+        
+        new_nodes = split_nodes_image([node1, node2, node3])
+        
+        expected_nodes = [
+            TextNode("Text with ", TextType.TEXT),
+            TextNode("img1", TextType.IMAGE, "url1"),
+            node2,  # This node has no images, so it should remain unchanged
+            TextNode("Text with ", TextType.TEXT),
+            TextNode("img2", TextType.IMAGE, "url2"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("img3", TextType.IMAGE, "url3"),
+        ]
+    
+        self.assertListEqual(expected_nodes, new_nodes) 
+
+
+    def test_split_nodes_link(self):
+        # Test case provided in the assignment
+        node = TextNode(
+            "This is text with an [link](https://i.imgur.com/) and another [second link](https://i.imgur.com/)",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_link([node])
+        self.assertListEqual(
+            [
+                TextNode("This is text with an ", TextType.TEXT),
+                TextNode("link", TextType.LINK, "https://i.imgur.com/"),
+                TextNode(" and another ", TextType.TEXT),
+                TextNode(
+                    "second link", TextType.LINK, "https://i.imgur.com/"
+                ),
+            ],
+            new_nodes,
+        )
+        
+    def test_split_nodes_link_no_links(self):
+        # Test case with no links
+        node = TextNode("This is text with no links", TextType.TEXT)
+        new_nodes = split_nodes_link([node])
+        self.assertListEqual([node], new_nodes)
+        
+    def test_split_nodes_link_multiple_nodes(self):
+        # Test with multiple input nodes
+        node1 = TextNode("Text with [link1](url1)", TextType.TEXT)
+        node2 = TextNode("Another text", TextType.TEXT)
+        node3 = TextNode("Text with [link2](url2) and [link3](url3)", TextType.TEXT)
+        
+        new_nodes = split_nodes_link([node1, node2, node3])
+        
+        expected_nodes = [
+            TextNode("Text with ", TextType.TEXT),
+            TextNode("link1", TextType.LINK, "url1"),
+            node2,  # This node has no links, so it should remain unchanged
+            TextNode("Text with ", TextType.TEXT),
+            TextNode("link2", TextType.LINK, "url2"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("link3", TextType.LINK, "url3"),
+        ]
+    
+        self.assertListEqual(expected_nodes, new_nodes) 
+
+    
+
 if __name__ == "__main__":
     unittest.main()
