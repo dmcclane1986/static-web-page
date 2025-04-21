@@ -192,6 +192,47 @@ class TestConverter(unittest.TestCase):
     
         self.assertListEqual(expected_nodes, new_nodes) 
 
+    def test_text_to_textnodes_simple(self):
+        # Test with plain text
+        text = "Just plain text"
+        nodes = text_to_textnodes(text)
+        assert len(nodes) == 1
+        assert nodes[0].text == "Just plain text"
+        assert nodes[0].text_type == TextType.TEXT
+        assert nodes[0].url is None
+
+    def test_text_to_textnodes_bold(self):
+        # Test with bold text
+        text = "This has a **bold** word"
+        nodes = text_to_textnodes(text)
+        assert len(nodes) == 3
+        assert nodes[0].text == "This has a "
+        assert nodes[0].text_type == TextType.TEXT
+        assert nodes[1].text == "bold"
+        assert nodes[1].text_type == TextType.BOLD
+        assert nodes[2].text == " word"
+        assert nodes[2].text_type == TextType.TEXT
+
+    def test_text_to_textnodes_mixed(self):
+        # Test with multiple formatting elements
+        text = "This has **bold** and _italic_ and `code`"
+        nodes = text_to_textnodes(text)
+        assert len(nodes) == 6
+        # Verify each node...
+
+    def test_text_to_textnodes_with_links(self):
+        # Test with a link
+        text = "Click [here](https://boot.dev) to learn"
+        nodes = text_to_textnodes(text)
+        assert len(nodes) == 3
+        assert nodes[1].text == "here"
+        assert nodes[1].text_type == TextType.LINK
+        assert nodes[1].url == "https://boot.dev"
+
+    def test_text_to_textnodes_with_images(self):
+        # Test with an image
+        text = "See this ![cool image](https://example.com/img.jpg)"
+
     
 
 if __name__ == "__main__":
