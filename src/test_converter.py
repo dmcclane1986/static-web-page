@@ -262,7 +262,102 @@ This is the same paragraph on a new line
     def test_multiple_consecutive_newlines(self):
         md = "Block 1\n\n\n\nBlock 2"
         self.assertEqual(markdown_to_blocks(md), ["Block 1", "Block 2"])
-        
 
+    def test_paragraph(self):
+        block = "This is a simple paragraph with no special formatting."
+        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+    
+    def test_heading(self):
+        # Test different heading levels
+        self.assertEqual(block_to_block_type("# Heading 1"), BlockType.HEADING)
+        self.assertEqual(block_to_block_type("## Heading 2"), BlockType.HEADING)
+        self.assertEqual(block_to_block_type("###### Heading 6"), BlockType.HEADING)
+        # Test non-heading (no space after #)
+        self.assertEqual(block_to_block_type("#Not a heading"), BlockType.PARAGRAPH)
+    
+    def test_code(self):
+        self.assertEqual(
+            block_to_block_type("```\ncode block\n```"), 
+            BlockType.CODE
+        )
+        # Test non-code block
+        self.assertEqual(
+            block_to_block_type("```\nIncomplete code block"), 
+            BlockType.PARAGRAPH
+        )
+    
+    def test_quote(self):
+        self.assertEqual(
+            block_to_block_type(">This is a quote\n>Second line"), 
+            BlockType.QUOTE
+        )
+        # Test non-quote (one line doesn't start with >)
+        self.assertEqual(
+            block_to_block_type(">This is a quote\nNot a quote"), 
+            BlockType.PARAGRAPH
+        )
+    
+
+    def test_ordered_list(self):
+        # Test valid ordered list
+        self.assertEqual(
+            block_to_block_type("1. First item\n2. Second item\n3. Third item"),
+            BlockType.ORDERED_LIST
+        )
+        
+        # Test with a single item (still valid)
+        self.assertEqual(
+            block_to_block_type("1. Single item"),
+            BlockType.ORDERED_LIST
+        )
+        
+        # Test invalid ordered list (numbers out of sequence)
+        self.assertEqual(
+            block_to_block_type("1. First item\n3. Third item"),
+            BlockType.PARAGRAPH
+        )
+        
+        # Test invalid ordered list (doesn't start with 1)
+        self.assertEqual(
+            block_to_block_type("2. Second item\n3. Third item"),
+            BlockType.PARAGRAPH
+        )
+        
+        # Test invalid ordered list (missing dot or space)
+        self.assertEqual(
+            block_to_block_type("1. First item\n2 Second item"),
+            BlockType.PARAGRAPH
+        )
+
+    def test_unordered_list(self):
+        # Test valid unordered list with multiple items
+        self.assertEqual(
+            block_to_block_type("- Item 1\n- Item 2\n- Item 3"),
+            BlockType.UNORDERED_LIST
+        )
+        
+        # Test valid unordered list with a single item
+        self.assertEqual(
+            block_to_block_type("- Single item"),
+            BlockType.UNORDERED_LIST
+        )
+        
+        # Test invalid unordered list (missing space after -)
+        self.assertEqual(
+            block_to_block_type("-Item 1\n- Item 2"),
+            BlockType.PARAGRAPH
+        )
+        
+        # Test invalid unordered list (one line doesn't start with -)
+        self.assertEqual(
+            block_to_block_type("- Item 1\nNot an item\n- Item 3"),
+            BlockType.PARAGRAPH
+        )
+        
+        # Test invalid unordered list (uses * instead of -)
+        self.assertEqual(
+            block_to_block_type("* Item 1\n* Item 2"),
+            BlockType.PARAGRAPH
+        )
 if __name__ == "__main__":
     unittest.main()

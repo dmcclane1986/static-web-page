@@ -1,5 +1,14 @@
 from textnode import *
 import re
+from enum import Enum
+
+class BlockType(Enum):
+    PARAGRAPH = "paragraph"
+    HEADING = "heading"
+    CODE = "code"
+    QUOTE = "quote"
+    UNORDERED_LIST = "unordered_list"
+    ORDERED_LIST = "ordered_list"
 
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
@@ -47,7 +56,6 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
     
     return result
 
-
 def extract_markdown_images(text):
     pattern = r"!\[([^\[\]]*)\]\(([^\(\)]*)\)"
     matches = re.findall(pattern, text)
@@ -93,8 +101,6 @@ def split_nodes_image(old_nodes):
         if remaining_text:
             result.append(TextNode(remaining_text,TextType.TEXT))
     return result
-
-
 
 def split_nodes_link(old_nodes):
     result = []
@@ -147,6 +153,7 @@ def text_to_textnodes(text):
     return nodes
 
 def markdown_to_blocks(markdown):
+
     lines = markdown.split("\n\n")
     no_space_lines = []
     for line in lines:
@@ -154,3 +161,33 @@ def markdown_to_blocks(markdown):
         if len(no_space_line)>0:
             no_space_lines.append(no_space_line)
     return no_space_lines
+
+def block_to_block_type(block):
+    if not block:
+        return BlockType.PARAGRAPH
+        
+    if block.startswith("#"):
+        for i in range(1,7):
+            if block.startswith("#" * i + " "):
+                return BlockType.HEADING
+            
+    if block.startswith("```") and block.endswith("```"):
+        return BlockType.CODE
+    lines = block.split("\n")
+
+    if all(line.startswith(">") for line in lines):
+        return BlockType.QUOTE
+    
+    if all(line.startswith("- ") for line in lines):
+        return BlockType.UNORDERED_LIST
+    
+    if len(lines) > 0:
+        is_ordered_list = True
+        for i, line in enumerate(lines, 1):
+            if not line.startswith(f"{i}. "):
+                is_ordered_list = False
+                break
+        if is_ordered_list:
+            return BlockType.ORDERED_LIST
+    
+    return BlockType.PARAGRAPH
