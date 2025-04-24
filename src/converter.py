@@ -145,3 +145,12 @@ def text_to_textnodes(text):
     nodes = split_nodes_link(nodes)
 
     return nodes
+
+def markdown_to_blocks(markdown):
+    lines = markdown.split("\n\n")
+    no_space_lines = []
+    for line in lines:
+        no_space_line = line.strip()
+        if len(no_space_line)>0:
+            no_space_lines.append(no_space_line)
+    return no_space_lines
