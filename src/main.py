@@ -75,7 +75,7 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
             generate_page(full_content_path, template_path, full_dest_html_path)
         if os.path.isdir(full_content_path):
             if not os.path.exists(full_dest_dir_path):
-                os.mkdir(full_dest_dir_path
+                os.mkdir(full_dest_dir_path)
             generate_pages_recursive(full_content_path, template_path, full_dest_dir_path)
 
 if __name__ == "__main__":
