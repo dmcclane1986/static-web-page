@@ -14,10 +14,10 @@ def main():
     os.mkdir(destination_path)
 
     copy_static_files(source_path, destination_path)
-    page_source = "content/index.md"
+    page_source = "content"
     template_source = "template.html"
-    dest_path = "public/index.html"
-    generate_page(page_source, template_source, dest_path)
+    dest_path = "public"
+    generate_pages_recursive(page_source, template_source, dest_path)
 
 def copy_static_files(current_path, destination_path):
     contents = os.listdir(current_path)
@@ -62,7 +62,21 @@ def generate_page(from_path, template_path, dest_path):
 
     with open(dest_path, 'w') as f:
         f.write(final_html)
-            
+
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    contents = os.listdir(dir_path_content)
+    for thing in contents:
+        base, ext = os.path.splitext(thing)
+        full_content_path = os.path.join(dir_path_content, thing)
+        full_dest_dir_path = os.path.join(dest_dir_path, thing)
+        if os.path.isfile(full_content_path) and thing.endswith(".md"):
+            html_filename = base + ".html"
+            full_dest_html_path = os.path.join(dest_dir_path, html_filename)
+            generate_page(full_content_path, template_path, full_dest_html_path)
+        if os.path.isdir(full_content_path):
+            if not os.path.exists(full_dest_dir_path):
+                os.mkdir(full_dest_dir_path
+            generate_pages_recursive(full_content_path, template_path, full_dest_dir_path)
 
 if __name__ == "__main__":
     main()
